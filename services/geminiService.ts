@@ -2,25 +2,27 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { AnalysisResult, FaceShape, MaskType, Language } from "../types";
 import { SYSTEM_INSTRUCTION } from "../constants";
 
+// 获取 AI 客户端实例
 const getAiClient = () => {
   const apiKey = process.env.API_KEY;
   if (!apiKey) {
-    throw new Error("API_KEY is not defined in the environment");
+    throw new Error("环境变量中未定义 API_KEY");
   }
   return new GoogleGenAI({ apiKey });
 };
 
+// 分析面部以进行口罩适配
 export const analyzeFaceForMaskFit = async (base64Image: string, lang: Language): Promise<AnalysisResult> => {
   const ai = getAiClient();
   
-  // Remove data URL prefix if present (supports png, jpeg, webp, etc.)
+  // 移除 data URL 前缀（支持 png、jpeg、webp 等）
   const cleanBase64 = base64Image.replace(/^data:image\/\w+;base64,/, "");
 
-  // Construct prompt based on language
-  // We request strict enums for machine-readable fields, but localized free-text for human-readable fields.
+  // 根据语言构建提示词
+  // 我们要求机器可读字段使用严格的枚举值，但人类可读字段使用本地化的自由文本
   const textPrompt = lang === 'zh'
-    ? "Analyze this face for N95 respirator fit. Identify face shape and key dimensions. Provide the 'summary', 'sealIssues' list, and recommendation 'reason' in Simplified Chinese. IMPORTANT: Keep 'faceShape', 'dimensions' values (Low, Medium, High etc), and mask 'type' as the English enum values defined in the schema."
-    : "Analyze this face for N95 respirator fit. Identify face shape, nose bridge features, and chin structure. Recommend specific mask styles.";
+    ? "分析此面部以进行 N95 呼吸器适配。识别脸型和关键尺寸。请用简体中文提供 'summary'、'sealIssues' 列表和推荐 'reason'。重要提示：保持 'faceShape'、'dimensions' 值（Low、Medium、High 等）和口罩 'type' 为架构中定义的英文枚举值。"
+    : "分析此面部以进行 N95 呼吸器适配。识别脸型、鼻梁特征和下巴结构。推荐特定的口罩样式。";
 
   try {
     const response = await ai.models.generateContent({
@@ -109,7 +111,7 @@ export const analyzeFaceForMaskFit = async (base64Image: string, lang: Language)
     return result;
 
   } catch (error) {
-    console.error("Gemini Analysis Failed:", error);
-    throw new Error("Failed to analyze image. Please try again.");
+    console.error("Gemini 分析失败:", error);
+    throw new Error("分析图像失败。请重试。");
   }
 };

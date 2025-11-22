@@ -13,6 +13,7 @@ interface ResultsDashboardProps {
 export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onRetry, lang, imageSrc }) => {
   const t = TRANSLATIONS[lang];
   
+  // 翻译枚举值
   const tr = (val: string) => {
     if (lang === 'zh' && ENUM_MAPPING.zh[val]) {
       return ENUM_MAPPING.zh[val];
@@ -78,40 +79,40 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onRe
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
         
-        {/* 3D Image Analysis Viewport */}
-        {/* Using perspective and transform-style to create a 3D depth effect on hover */}
+        {/* 3D 图像分析视口 */}
+        {/* 使用透视和变换样式在悬停时创建 3D 深度效果 */}
         <div className="relative w-full h-[500px] lg:h-[600px] rounded-3xl bg-slate-950 border-2 border-slate-800 shadow-2xl overflow-hidden group [perspective:1200px]">
             
-            {/* Inner Container with 3D Transform Logic */}
+            {/* 带 3D 变换逻辑的内部容器 */}
             <div className="absolute inset-0 transition-all duration-700 ease-out [transform-style:preserve-3d] group-hover:[transform:rotateX(4deg)_scale(1.02)] origin-center">
                 
-                {/* Layer 1: Background Image with Parallax Zoom */}
+                {/* 第 1 层：带视差缩放的背景图像 */}
                 <div className="absolute inset-0 overflow-hidden rounded-3xl">
                     {imageSrc ? (
                         <>
                             <img 
                                 src={imageSrc} 
                                 className="w-full h-full object-cover object-center opacity-70 transition-transform duration-[2s] ease-in-out scale-100 group-hover:scale-110 group-hover:opacity-60" 
-                                alt="Analysis Target" 
+                                alt="分析目标" 
                             />
-                            {/* Cinematic Vignette */}
+                            {/* 电影级晕影效果 */}
                             <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/20 to-slate-950/50 mix-blend-multiply"></div>
                         </>
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center text-slate-500">No Image</div>
+                        <div className="w-full h-full flex items-center justify-center text-slate-500">无图像</div>
                     )}
                 </div>
 
-                {/* Layer 2: Floating Holographic Grid (Floor) */}
+                {/* 第 2 层：浮动全息网格（地板） */}
                 <div className="absolute inset-x-0 bottom-0 h-1/2 bg-[linear-gradient(0deg,transparent_24%,rgba(45,212,191,.1)_25%,rgba(45,212,191,.1)_26%,transparent_27%,transparent_74%,rgba(45,212,191,.1)_75%,rgba(45,212,191,.1)_76%,transparent_77%,transparent),linear-gradient(90deg,transparent_24%,rgba(45,212,191,.1)_25%,rgba(45,212,191,.1)_26%,transparent_27%,transparent_74%,rgba(45,212,191,.1)_75%,rgba(45,212,191,.1)_76%,transparent_77%,transparent)] bg-[length:50px_50px] [transform:perspective(600px)_rotateX(60deg)_translateZ(20px)] opacity-40 pointer-events-none"></div>
 
-                {/* Layer 3: Floating HUD Elements (Center) */}
+                {/* 第 3 层：浮动 HUD 元素（中心） */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none [transform:translateZ(40px)] transition-transform duration-700 group-hover:[transform:translateZ(60px)]">
                     <div className="relative w-56 h-72 border-x border-teal-500/30 rounded-[3rem]">
-                        {/* Scanning Beam */}
+                        {/* 扫描光束 */}
                         <div className="absolute w-full h-0.5 bg-teal-400 shadow-[0_0_15px_rgba(45,212,191,0.8)] animate-[scan_3s_ease-in-out_infinite]"></div>
                         
-                        {/* Corners */}
+                        {/* 四角标记 */}
                         <div className="absolute -top-2 -left-2 w-6 h-6 border-t-2 border-l-2 border-teal-400 rounded-tl-xl"></div>
                         <div className="absolute -top-2 -right-2 w-6 h-6 border-t-2 border-r-2 border-teal-400 rounded-tr-xl"></div>
                         <div className="absolute -bottom-2 -left-2 w-6 h-6 border-b-2 border-l-2 border-teal-400 rounded-bl-xl"></div>
@@ -119,7 +120,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onRe
                     </div>
                 </div>
 
-                {/* Layer 4: Floating Data Points (Scattered) */}
+                {/* 第 4 层：浮动数据点（分散） */}
                 <div className="absolute top-1/4 left-1/4 [transform:translateZ(80px)] transition-all duration-500 group-hover:[transform:translateZ(100px)]">
                     <div className="flex items-center gap-2 bg-slate-900/80 backdrop-blur-sm px-3 py-1 rounded-full border border-teal-500/20 shadow-lg">
                         <div className="w-2 h-2 bg-teal-400 rounded-full animate-pulse"></div>
@@ -130,20 +131,20 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onRe
                 <div className="absolute bottom-1/4 right-1/4 [transform:translateZ(80px)] transition-all duration-500 group-hover:[transform:translateZ(100px)]">
                      <div className="flex items-center gap-2 bg-slate-900/80 backdrop-blur-sm px-3 py-1 rounded-full border border-teal-500/20 shadow-lg">
                         <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse delay-150"></div>
-                        <span className="text-[10px] text-blue-200 font-mono uppercase">Depth Map</span>
+                        <span className="text-[10px] text-blue-200 font-mono uppercase">深度图</span>
                     </div>
                 </div>
 
-                {/* Layer 5: Bottom Info Card */}
+                {/* 第 5 层：底部信息卡片 */}
                 <div className="absolute bottom-8 inset-x-8 [transform:translateZ(50px)] transition-transform duration-700 group-hover:[transform:translateZ(70px)]">
                     <div className="bg-slate-900/90 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow-2xl">
                         <div className="flex justify-between items-center">
                             <div>
-                                <div className="text-xs text-teal-500 font-mono mb-1 uppercase tracking-widest">Subject Analyzed</div>
+                                <div className="text-xs text-teal-500 font-mono mb-1 uppercase tracking-widest">分析对象</div>
                                 <div className="text-2xl font-bold text-white tracking-tight">{tr(result.faceShape)}</div>
                             </div>
                              <div className="text-right">
-                                <div className="text-xs text-slate-400 font-mono mb-1 uppercase tracking-widest">Confidence</div>
+                                <div className="text-xs text-slate-400 font-mono mb-1 uppercase tracking-widest">置信度</div>
                                 <div className="text-2xl font-bold text-teal-400 tracking-tight">{result.overallFitScore}%</div>
                             </div>
                         </div>
@@ -154,13 +155,13 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onRe
                 </div>
             </div>
             
-            {/* Reflection/Glass Effect */}
+            {/* 反射/玻璃效果 */}
             <div className="absolute inset-0 bg-gradient-to-tr from-white/5 via-transparent to-transparent pointer-events-none mix-blend-overlay"></div>
         </div>
 
-        {/* Main Metrics */}
+        {/* 主要指标 */}
         <div className="flex flex-col justify-between space-y-6">
-            {/* Score Card */}
+            {/* 评分卡片 */}
             <div className="bg-white rounded-3xl p-8 shadow-xl border border-slate-100 flex-1 flex flex-col items-center justify-center relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-6 opacity-[0.03]">
                     <svg className="w-40 h-40" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -180,7 +181,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onRe
                 </div>
             </div>
 
-            {/* Radar Analysis */}
+            {/* 雷达分析 */}
             <div className="bg-white rounded-3xl p-8 shadow-xl border border-slate-100 flex-1">
                  <h3 className="text-slate-400 font-bold uppercase tracking-widest text-xs mb-4">{t.zonalAnalysis}</h3>
                  <div className="w-full h-56">
@@ -198,7 +199,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onRe
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Biometrics List */}
+        {/* 生物特征列表 */}
         <div className="bg-white rounded-3xl p-6 shadow-lg border border-slate-100">
             <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
                 <span className="w-1 h-6 bg-teal-500 rounded-full"></span>
@@ -219,7 +220,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onRe
             </div>
         </div>
 
-        {/* Recommendations */}
+        {/* 推荐产品 */}
         <div className="md:col-span-2 bg-white rounded-3xl p-6 shadow-lg border border-slate-100">
             <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
                 <span className="w-1 h-6 bg-teal-500 rounded-full"></span>
@@ -249,7 +250,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onRe
         </div>
       </div>
 
-      {/* Summary & Actions */}
+      {/* 摘要和操作 */}
       <div className="mt-8 bg-slate-900 text-white rounded-3xl p-8 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
               <svg className="w-96 h-96" fill="currentColor" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>

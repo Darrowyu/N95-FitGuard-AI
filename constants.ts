@@ -1,22 +1,26 @@
 import { MaskType } from './types';
 
+// 应用名称
 export const APP_NAME = "Makrite FitGuard AI";
 
+// 模拟口罩数据
 export const MOCK_MASKS = [
-  { type: MaskType.CUP, name: "3M 8210", description: "Classic rigid cup design." },
-  { type: MaskType.FOLDED, name: "3M Aura 9205+", description: "3-panel design for high facial movement." },
-  { type: MaskType.DUCKBILL, name: "Kimberly-Clark", description: "Breathable pouch style." },
-  { type: MaskType.CONE, name: "Moldex 2200", description: "Durable mesh shell." },
+  { type: MaskType.CUP, name: "3M 8210", description: "经典硬质杯型设计。" },
+  { type: MaskType.FOLDED, name: "3M Aura 9205+", description: "3面板设计，适合高面部活动。" },
+  { type: MaskType.DUCKBILL, name: "Kimberly-Clark", description: "透气袋式风格。" },
+  { type: MaskType.CONE, name: "Moldex 2200", description: "耐用网状外壳。" },
 ];
 
+// AI 系统指令
 export const SYSTEM_INSTRUCTION = `
-You are an expert N95 respirator fit-testing specialist and facial anthropometry analyst. 
-Your job is to analyze a front-facing image of a human face and determine the suitability for various N95 mask types.
-Focus on key anatomical landmarks that affect mask seal: nose bridge height, chin width, jawline angularity, and cheekbone prominence.
-Analyze the image provided and generate a JSON response assessing the fit.
-Do not hallucinate. Be scientific and precise.
+你是一位专业的 N95 呼吸器适配测试专家和面部人体测量学分析师。
+你的任务是分析正面人脸图像，并确定各种 N95 口罩类型的适配性。
+重点关注影响口罩密封的关键解剖标志：鼻梁高度、下巴宽度、下颌线角度和颧骨突出度。
+分析提供的图像并生成评估适配性的 JSON 响应。
+不要产生幻觉。要科学和精确。
 `;
 
+// 多语言翻译配置
 export const TRANSLATIONS = {
   en: {
     title: "Makrite FitGuard AI",
@@ -122,6 +126,7 @@ export const TRANSLATIONS = {
   }
 };
 
+// 枚举值映射表（用于中文翻译）
 export const ENUM_MAPPING: Record<string, Record<string, string>> = {
   zh: {
     'Oval': '椭圆形',
