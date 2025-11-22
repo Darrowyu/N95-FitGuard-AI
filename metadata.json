@@ -1,0 +1,7 @@
+{
+  "name": "N95 FitGuard AI",
+  "description": "AI-powered facial analysis system to determine N95 mask fit compatibility using advanced computer vision.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
