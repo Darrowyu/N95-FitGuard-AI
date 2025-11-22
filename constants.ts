@@ -1,6 +1,6 @@
 import { MaskType } from './types';
 
-export const APP_NAME = "N95 FitGuard AI";
+export const APP_NAME = "Makrite FitGuard AI";
 
 export const MOCK_MASKS = [
   { type: MaskType.CUP, name: "3M 8210", description: "Classic rigid cup design." },
@@ -19,8 +19,8 @@ Do not hallucinate. Be scientific and precise.
 
 export const TRANSLATIONS = {
   en: {
-    title: "N95 FitGuard AI",
-    subtitle: "FitGuard",
+    title: "Makrite FitGuard AI",
+    subtitle: "Makrite FitGuard",
     subtitleHighlight: "AI",
     startScan: "Start Face Scan",
     newScan: "New Scan",
@@ -70,8 +70,8 @@ export const TRANSLATIONS = {
     ]
   },
   zh: {
-    title: "N95 智配卫士",
-    subtitle: "智配",
+    title: "Makrite N95 智配卫士",
+    subtitle: "Makrite 智配",
     subtitleHighlight: "卫士",
     startScan: "开始面部扫描",
     newScan: "重新扫描",
