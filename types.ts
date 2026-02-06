@@ -1,3 +1,6 @@
+// 引入 ReactNode 类型
+import type { ReactNode } from 'react';
+
 // 语言类型定义
 export type Language = 'en' | 'zh';
 
@@ -53,3 +56,26 @@ export interface AnalysisResult {
 
 // 应用状态类型
 export type AppState = 'idle' | 'camera' | 'analyzing' | 'results' | 'error';
+
+// ========== 错误边界类型定义 ==========
+
+// 错误边界组件 Props
+export interface ErrorBoundaryProps {
+  children: ReactNode;
+  lang: Language;
+}
+
+// 错误边界组件 State
+export interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+// 错误边界翻译文本
+export interface ErrorBoundaryTranslations {
+  title: string;
+  description: string;
+  retry: string;
+  reload: string;
+  details: string;
+}

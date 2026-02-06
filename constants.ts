@@ -1,4 +1,4 @@
-import { MaskType } from './types';
+import { MaskType, Language, FaceShape } from './types';
 
 // 应用名称
 export const APP_NAME = "Makrite FitGuard AI";
@@ -71,7 +71,18 @@ export const TRANSLATIONS = {
       "Mapping Facial Topology...",
       "Analyzing Seal Integrity...",
       "Generating Fit Report..."
-    ]
+    ],
+    // 摄像头相关
+    requestingCameraPermission: 'Requesting camera permission...',
+    cameraPermissionHint: 'Please allow camera access in the browser popup',
+    cameraPermissionTimeout: 'Camera permission request timed out. Please check your browser permissions.',
+    loadingCamera: 'Loading camera...',
+    // ARIA 标签
+    ariaLabels: {
+      takePhoto: 'Take photo',
+      uploadFromGallery: 'Upload photo from gallery',
+      analysisProgress: 'Analysis progress'
+    }
   },
   zh: {
     title: "Makrite N95 智配卫士",
@@ -122,27 +133,242 @@ export const TRANSLATIONS = {
       "正在绘制面部拓扑结构...",
       "正在分析密封完整性...",
       "正在生成适配报告..."
-    ]
+    ],
+    // 摄像头相关
+    requestingCameraPermission: '正在请求摄像头权限...',
+    cameraPermissionHint: '请在浏览器弹窗中允许访问摄像头',
+    cameraPermissionTimeout: '摄像头权限请求超时，请检查浏览器权限设置。',
+    loadingCamera: '正在加载摄像头...',
+    // ARIA 标签
+    ariaLabels: {
+      takePhoto: '拍照',
+      uploadFromGallery: '从相册上传照片',
+      analysisProgress: '分析进度'
+    }
   }
 };
 
-// 枚举值映射表（用于中文翻译）
-export const ENUM_MAPPING: Record<string, Record<string, string>> = {
+// ============================================================================
+// 枚举映射系统 - 类型安全的翻译映射
+// ============================================================================
+
+/**
+ * 枚举类别定义
+ * 用于组织和管理不同类型的枚举值
+ */
+export type EnumCategory = 
+  | 'faceShape'      // 脸型
+  | 'dimension'      // 面部尺寸（高/中/低，宽/中/窄）
+  | 'maskType';      // 口罩类型
+
+/**
+ * 枚举映射项接口
+ * 定义单个枚举值的翻译结构
+ */
+export interface EnumMappingItem {
+  /** 英文原文 */
+  en: string;
+  /** 中文翻译 */
+  zh: string;
+  /** 可选的描述信息 */
+  description?: string;
+}
+
+/**
+ * 类型安全的枚举映射表
+ * 
+ * 按类别组织枚举值，支持快速查找和扩展
+ * 
+ * @example
+ * // 获取脸型翻译
+ * ENUM_MAP.faceShape.Oval.zh // '椭圆形'
+ * 
+ * // 获取口罩类型翻译
+ * ENUM_MAP.maskType['Cup Style'].zh // '杯型'
+ */
+export const ENUM_MAP: Record<EnumCategory, Record<string, EnumMappingItem>> = {
+  faceShape: {
+    [FaceShape.OVAL]: { 
+      en: FaceShape.OVAL, 
+      zh: '椭圆形',
+      description: '均衡的面部比例，适合大多数口罩类型'
+    },
+    [FaceShape.ROUND]: { 
+      en: FaceShape.ROUND, 
+      zh: '圆形',
+      description: '圆润的面部轮廓，需要选择有良好侧封的口罩'
+    },
+    [FaceShape.SQUARE]: { 
+      en: FaceShape.SQUARE, 
+      zh: '方形',
+      description: '明显的下颌线，适合杯型或折叠型口罩'
+    },
+    [FaceShape.HEART]: { 
+      en: FaceShape.HEART, 
+      zh: '心形',
+      description: '宽额头窄下巴，需要关注鼻梁密封'
+    },
+    [FaceShape.LONG]: { 
+      en: FaceShape.LONG, 
+      zh: '长形',
+      description: '纵向较长的面部，适合高杯型口罩'
+    },
+    [FaceShape.DIAMOND]: { 
+      en: FaceShape.DIAMOND, 
+      zh: '菱形',
+      description: '突出的颧骨，需要灵活的口罩边缘设计'
+    },
+  },
+  dimension: {
+    'Low': { en: 'Low', zh: '低', description: '较低的测量值' },
+    'Medium': { en: 'Medium', zh: '中', description: '中等的测量值' },
+    'High': { en: 'High', zh: '高', description: '较高的测量值' },
+    'Narrow': { en: 'Narrow', zh: '窄', description: '较窄的测量值' },
+    'Wide': { en: 'Wide', zh: '宽', description: '较宽的测量值' },
+  },
+  maskType: {
+    [MaskType.CUP]: { 
+      en: MaskType.CUP, 
+      zh: '杯型',
+      description: '经典硬质杯型设计，提供良好的呼吸空间'
+    },
+    [MaskType.FOLDED]: { 
+      en: MaskType.FOLDED, 
+      zh: '折叠型 (3面板)',
+      description: '3面板设计，适合高面部活动和言语交流'
+    },
+    [MaskType.DUCKBILL]: { 
+      en: MaskType.DUCKBILL, 
+      zh: '鸭嘴型',
+      description: '透气袋式设计，提供最大呼吸空间'
+    },
+    [MaskType.CONE]: { 
+      en: MaskType.CONE, 
+      zh: '锥型',
+      description: '耐用网状外壳，适合工业环境'
+    },
+  },
+};
+
+/**
+ * 扁平化的枚举翻译映射表（向后兼容）
+ * 
+ * 结构: Record<Language, Record<枚举值, 翻译>>
+ * 英文作为默认语言，不需要翻译，使用原值
+ * 
+ * @deprecated 推荐使用 translateEnum 函数或 ENUM_MAP
+ */
+export const ENUM_TRANSLATIONS: Record<Language, Record<string, string>> = {
+  en: {
+    // 英文是默认语言，返回原值
+  },
   zh: {
+    // 脸型
     'Oval': '椭圆形',
     'Round': '圆形',
     'Square': '方形',
     'Heart': '心形',
     'Long': '长形',
     'Diamond': '菱形',
+    // 面部尺寸
     'Low': '低',
     'Medium': '中',
     'High': '高',
     'Narrow': '窄',
     'Wide': '宽',
+    // 口罩类型
     'Cup Style': '杯型',
     'Folded (3-Panel)': '折叠型 (3面板)',
     'Duckbill': '鸭嘴型',
     'Cone Style': '锥型'
   }
 };
+
+/**
+ * 翻译枚举值 - 类型安全版本
+ * 
+ * @param value - 需要翻译的枚举值（英文）
+ * @param lang - 目标语言
+ * @returns 翻译后的值，如果没有翻译则返回原值
+ * 
+ * @example
+ * translateEnum('Oval', 'zh') // '椭圆形'
+ * translateEnum('Oval', 'en') // 'Oval'
+ * translateEnum(MaskType.CUP, 'zh') // '杯型'
+ */
+export const translateEnum = (value: string, lang: Language): string => {
+  if (lang === 'en') {
+    return value;
+  }
+  return ENUM_TRANSLATIONS[lang]?.[value] ?? value;
+};
+
+/**
+ * 翻译枚举值 - 增强版本（带类型推断）
+ * 
+ * @param category - 枚举类别
+ * @param value - 枚举值
+ * @param lang - 目标语言
+ * @returns 翻译后的字符串
+ * 
+ * @example
+ * translateEnumByCategory('faceShape', FaceShape.OVAL, 'zh') // '椭圆形'
+ * translateEnumByCategory('maskType', MaskType.CUP, 'zh') // '杯型'
+ */
+export const translateEnumByCategory = (
+  category: EnumCategory,
+  value: string,
+  lang: Language
+): string => {
+  if (lang === 'en') {
+    return value;
+  }
+  return ENUM_MAP[category]?.[value]?.[lang] ?? value;
+};
+
+/**
+ * 获取枚举项的完整信息
+ * 
+ * @param category - 枚举类别
+ * @param value - 枚举值
+ * @returns 枚举项的完整信息，如果不存在返回 null
+ * 
+ * @example
+ * getEnumItem('faceShape', FaceShape.OVAL)
+ * // { en: 'Oval', zh: '椭圆形', description: '...' }
+ */
+export const getEnumItem = (
+  category: EnumCategory,
+  value: string
+): EnumMappingItem | null => {
+  return ENUM_MAP[category]?.[value] ?? null;
+};
+
+/**
+ * 获取枚举类别的所有值
+ * 
+ * @param category - 枚举类别
+ * @param lang - 目标语言
+ * @returns 该类别下所有枚举值的翻译数组
+ * 
+ * @example
+ * getEnumValues('faceShape', 'zh')
+ * // ['椭圆形', '圆形', '方形', '心形', '长形', '菱形']
+ */
+export const getEnumValues = (
+  category: EnumCategory,
+  lang: Language
+): string[] => {
+  const items = ENUM_MAP[category];
+  if (!items) return [];
+  
+  return Object.values(items).map(item => 
+    lang === 'en' ? item.en : item.zh
+  );
+};
+
+/**
+ * @deprecated 请使用 translateEnum 或 translateEnumByCategory 函数替代
+ * 保留此常量以兼容旧代码，但建议使用新的翻译函数
+ */
+export const ENUM_MAPPING: Record<string, Record<string, string>> = ENUM_TRANSLATIONS;

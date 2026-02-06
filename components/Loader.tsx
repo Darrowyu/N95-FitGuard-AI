@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Language } from '../types';
 import { TRANSLATIONS } from '../constants';
 
@@ -7,21 +7,23 @@ interface LoaderProps {
   imageSrc?: string | null;
 }
 
-export const Loader: React.FC<LoaderProps> = ({ lang, imageSrc }) => {
-  const t = TRANSLATIONS[lang];
+const STAGE_COUNT = 4;
+
+const LoaderComponent: React.FC<LoaderProps> = ({ lang, imageSrc }) => {
+  const t = useMemo(() => TRANSLATIONS[lang], [lang]);
   const [currentStage, setCurrentStage] = useState(0);
 
   // 定时切换加载阶段
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentStage((prev) => {
-        if (prev < t.loadingStages.length - 1) return prev + 1;
+        if (prev < STAGE_COUNT - 1) return prev + 1;
         return prev;
       });
     }, 1500);
 
     return () => clearInterval(interval);
-  }, [t.loadingStages.length]);
+  }, []);
 
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden bg-slate-900 font-mono">
@@ -73,7 +75,7 @@ export const Loader: React.FC<LoaderProps> = ({ lang, imageSrc }) => {
         </div>
         
         {/* 阶段列表 */}
-        <div className="w-full bg-black/40 backdrop-blur-md rounded-xl border border-white/10 p-6 shadow-2xl">
+        <div className="w-full bg-black/50 backdrop-blur-md rounded-xl border border-white/20 p-6 shadow-2xl" role="status" aria-live="polite" aria-atomic="true" aria-label={t.ariaLabels?.analysisProgress || "Analysis progress"}>
             <div className="space-y-4">
               {t.loadingStages.map((stageText, index) => {
                 const isActive = index === currentStage;
@@ -81,7 +83,7 @@ export const Loader: React.FC<LoaderProps> = ({ lang, imageSrc }) => {
                 const isPending = index > currentStage;
 
                 return (
-                  <div key={index} className={`flex items-center gap-4 transition-all duration-500 ${isPending ? 'opacity-30' : 'opacity-100'}`}>
+                  <div key={index} className={`flex items-center gap-4 transition-all duration-500 ${isPending ? 'opacity-30' : 'opacity-100'}`} aria-current={isActive ? 'step' : undefined}>
                     {/* 状态图标 */}
                     <div className="relative w-6 h-6 flex items-center justify-center shrink-0">
                       {isCompleted ? (
@@ -105,9 +107,17 @@ export const Loader: React.FC<LoaderProps> = ({ lang, imageSrc }) => {
             </div>
 
             {/* 全局进度条 */}
-            <div className="mt-6 w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+            <div 
+              className="mt-6 w-full h-2 bg-slate-700 rounded-full overflow-hidden" 
+              role="progressbar" 
+              aria-valuenow={currentStage + 1} 
+              aria-valuemin={1} 
+              aria-valuemax={t.loadingStages.length} 
+              aria-valuetext={`${t.loadingStages[currentStage]} (${currentStage + 1} of ${t.loadingStages.length})`}
+              aria-label={t.ariaLabels?.analysisProgress || "Analysis progress"}
+            >
                <div 
-                 className="h-full bg-teal-500 shadow-[0_0_10px_rgba(45,212,191,0.6)] transition-all duration-1000 ease-out"
+                 className="h-full bg-teal-400 shadow-[0_0_10px_rgba(45,212,191,0.8)] transition-all duration-1000 ease-out"
                  style={{ width: `${((currentStage + 1) / t.loadingStages.length) * 100}%` }}
                ></div>
             </div>
@@ -117,3 +127,5 @@ export const Loader: React.FC<LoaderProps> = ({ lang, imageSrc }) => {
     </div>
   );
 };
+
+export const Loader = React.memo(LoaderComponent);

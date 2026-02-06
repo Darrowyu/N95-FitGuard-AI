@@ -1,7 +1,21 @@
 import React from 'react';
 import { AnalysisResult, MaskType, Language } from '../types';
-import { TRANSLATIONS, ENUM_MAPPING } from '../constants';
+import { TRANSLATIONS, translateEnum } from '../constants';
 import { RadialBarChart, RadialBar, PolarAngleAxis, ResponsiveContainer, Radar, RadarChart, PolarGrid, PolarRadiusAxis } from 'recharts';
+import { 
+  MaskCupIcon, 
+  MaskFoldedIcon, 
+  MaskDuckbillIcon, 
+  MaskConeIcon,
+  CheckIcon,
+  WarningIcon,
+  RefreshIcon,
+} from './icon';
+import { 
+  SummaryIcon,
+  CheckCircleIcon,
+  MaskBackgroundIcon
+} from './Icons';
 
 interface ResultsDashboardProps {
   result: AnalysisResult;
@@ -12,49 +26,18 @@ interface ResultsDashboardProps {
 
 export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onRetry, lang, imageSrc }) => {
   const t = TRANSLATIONS[lang];
-  
-  // 翻译枚举值
-  const tr = (val: string) => {
-    if (lang === 'zh' && ENUM_MAPPING.zh[val]) {
-      return ENUM_MAPPING.zh[val];
-    }
-    return val;
-  };
+
 
   const getMaskIcon = (type: string) => {
     switch (type) {
       case MaskType.CUP:
-        return (
-          <svg className="w-7 h-7 text-teal-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-             <path d="M12 20c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-             <path d="M2 12h20" />
-             <path d="M12 2v20" />
-             <circle cx="12" cy="12" r="3" />
-          </svg>
-        );
+        return <MaskCupIcon className="w-7 h-7 text-teal-600" />;
       case MaskType.FOLDED:
-        return (
-          <svg className="w-7 h-7 text-teal-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M4 6h16l-2 6-2 6H8l-2-6-2-6z" />
-            <path d="M2 6h20" />
-            <path d="M4 12h16" />
-          </svg>
-        );
+        return <MaskFoldedIcon className="w-7 h-7 text-teal-600" />;
       case MaskType.DUCKBILL:
-         return (
-          <svg className="w-7 h-7 text-teal-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M2 12c0 4 9 8 10 8s10-4 10-8-9-8-10-8-10 4-10 8z" />
-            <line x1="2" y1="12" x2="22" y2="12" />
-            <path d="M12 12v-4" />
-          </svg>
-         );
+        return <MaskDuckbillIcon className="w-7 h-7 text-teal-600" />;
       case MaskType.CONE:
-        return (
-          <svg className="w-7 h-7 text-teal-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 3L3 19h18L12 3z" />
-            <path d="M12 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4" />
-          </svg>
-        );
+        return <MaskConeIcon className="w-7 h-7 text-teal-600" />;
       default:
         return <span className="text-2xl">😷</span>;
     }
@@ -141,7 +124,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onRe
                         <div className="flex justify-between items-center">
                             <div>
                                 <div className="text-xs text-teal-500 font-mono mb-1 uppercase tracking-widest">分析对象</div>
-                                <div className="text-2xl font-bold text-white tracking-tight">{tr(result.faceShape)}</div>
+                                <div className="text-2xl font-bold text-white tracking-tight">{translateEnum(result.faceShape, lang)}</div>
                             </div>
                              <div className="text-right">
                                 <div className="text-xs text-slate-400 font-mono mb-1 uppercase tracking-widest">置信度</div>
@@ -162,13 +145,13 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onRe
         {/* 主要指标 */}
         <div className="flex flex-col justify-between space-y-6">
             {/* 评分卡片 */}
-            <div className="bg-white rounded-3xl p-8 shadow-xl border border-slate-100 flex-1 flex flex-col items-center justify-center relative overflow-hidden">
+            <div className="bg-white rounded-3xl p-8 shadow-xl border border-slate-100 flex-1 flex flex-col items-center justify-center relative overflow-hidden min-h-[320px]">
                 <div className="absolute top-0 right-0 p-6 opacity-[0.03]">
-                    <svg className="w-40 h-40" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <CheckCircleIcon className="w-40 h-40" />
                 </div>
                 <h3 className="text-slate-400 font-bold uppercase tracking-widest text-xs mb-6">{t.compatibilityScore}</h3>
                 <div className="w-56 h-56 relative z-10">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width={224} height={224}>
                     <RadialBarChart innerRadius="85%" outerRadius="100%" barSize={12} data={scoreData} startAngle={90} endAngle={-270}>
                         <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
                         <RadialBar background dataKey="value" cornerRadius={20} />
@@ -182,10 +165,10 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onRe
             </div>
 
             {/* 雷达分析 */}
-            <div className="bg-white rounded-3xl p-8 shadow-xl border border-slate-100 flex-1">
+            <div className="bg-white rounded-3xl p-8 shadow-xl border border-slate-100 flex-1 min-h-[320px]">
                  <h3 className="text-slate-400 font-bold uppercase tracking-widest text-xs mb-4">{t.zonalAnalysis}</h3>
-                 <div className="w-full h-56">
-                    <ResponsiveContainer width="100%" height="100%">
+                 <div className="w-full" style={{ height: 224 }}>
+                    <ResponsiveContainer width="100%" height={224}>
                         <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
                             <PolarGrid stroke="#f1f5f9" />
                             <PolarAngleAxis dataKey="subject" tick={{fill: '#64748b', fontSize: 11, fontWeight: 600}} />
@@ -214,7 +197,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onRe
                 ].map((item, idx) => (
                     <div key={idx} className="flex justify-between items-center group">
                         <span className="text-slate-500 text-sm font-medium group-hover:text-teal-600 transition-colors">{item.label}</span>
-                        <span className="font-bold text-slate-800 bg-slate-50 px-3 py-1 rounded-lg border border-slate-100">{tr(item.value)}</span>
+                        <span className="font-bold text-slate-800 bg-slate-50 px-3 py-1 rounded-lg border border-slate-100">{translateEnum(item.value, lang)}</span>
                     </div>
                 ))}
             </div>
@@ -236,7 +219,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onRe
                              <div className="flex justify-between items-start mb-2">
                                  <div>
                                      <h4 className="font-bold text-slate-900 text-lg">{rec.modelName}</h4>
-                                     <p className="text-xs text-teal-600 font-bold uppercase tracking-wide">{tr(rec.type)}</p>
+                                     <p className="text-xs text-teal-600 font-bold uppercase tracking-wide">{translateEnum(rec.type, lang)}</p>
                                  </div>
                                  <div className="flex flex-col items-end">
                                      <span className="bg-teal-600 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-sm">{rec.matchScore}%</span>
@@ -253,12 +236,12 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onRe
       {/* 摘要和操作 */}
       <div className="mt-8 bg-slate-900 text-white rounded-3xl p-8 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
-              <svg className="w-96 h-96" fill="currentColor" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+              <MaskBackgroundIcon className="w-96 h-96" />
           </div>
           
           <div className="relative z-10">
               <h3 className="text-xl font-bold mb-4 flex items-center gap-3 text-teal-400">
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                  <SummaryIcon className="w-6 h-6" />
                   {t.summary}
               </h3>
               <p className="text-slate-300 leading-relaxed mb-8 text-lg font-light">{result.summary}</p>
@@ -269,14 +252,14 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onRe
                      <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
                          {result.sealIssues.map((issue, i) => (
                              <li key={i} className="flex items-start gap-3 text-amber-300 text-sm">
-                                 <svg className="w-5 h-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                 <WarningIcon className="w-5 h-5 shrink-0 mt-0.5" />
                                  {issue}
                              </li>
                          ))}
                      </ul>
                  ) : (
                      <p className="text-green-400 flex items-center gap-3 text-sm font-medium">
-                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                         <CheckIcon className="w-5 h-5" />
                          {t.noLeaks}
                      </p>
                  )}
@@ -284,7 +267,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ result, onRe
 
               <div className="flex justify-center">
                   <button onClick={onRetry} className="bg-teal-500 text-white px-10 py-4 rounded-full font-bold hover:bg-teal-400 transition-all shadow-[0_0_30px_rgba(20,184,166,0.4)] hover:scale-105 active:scale-95 flex items-center gap-3">
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                      <RefreshIcon className="w-5 h-5" />
                       {t.newScan}
                   </button>
               </div>

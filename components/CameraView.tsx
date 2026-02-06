@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Language } from '../types';
 import { TRANSLATIONS } from '../constants';
 
@@ -9,16 +9,30 @@ interface CameraViewProps {
   lang: Language;
 }
 
-export const CameraView: React.FC<CameraViewProps> = ({ onCapture, onError, onUpload, lang }) => {
+const CameraViewComponent: React.FC<CameraViewProps> = ({ onCapture, onError, onUpload, lang }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isStreamReady, setIsStreamReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRequestingPermission, setIsRequestingPermission] = useState(true);
+  const [permissionError, setPermissionError] = useState<string | null>(null);
   const t = TRANSLATIONS[lang];
 
   useEffect(() => {
     let stream: MediaStream | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     const startCamera = async () => {
+      // 设置10秒超时
+      timeoutId = setTimeout(() => {
+        if (!isStreamReady) {
+          console.error("Camera permission timeout after 10 seconds");
+          setPermissionError(t.cameraPermissionTimeout || 'Camera permission request timed out. Please check your browser permissions.');
+          setIsRequestingPermission(false);
+          onError();
+        }
+      }, 10000);
+
       try {
         // 请求前置摄像头，但让操作系统决定最佳分辨率
         // 这可以防止在竖屏手机上强制横屏，从而导致偏心裁剪
@@ -28,15 +42,27 @@ export const CameraView: React.FC<CameraViewProps> = ({ onCapture, onError, onUp
           }
         });
 
+        // 权限已获取，更新状态
+        setIsRequestingPermission(false);
+
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           videoRef.current.onloadedmetadata = () => {
             setIsStreamReady(true);
+            setIsLoading(false);
+            if (timeoutId) {
+              clearTimeout(timeoutId);
+            }
             videoRef.current?.play();
           };
         }
       } catch (err) {
         console.error("Error accessing camera:", err);
+        setIsRequestingPermission(false);
+        setIsLoading(false);
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
         onError();
       }
     };
@@ -44,13 +70,16 @@ export const CameraView: React.FC<CameraViewProps> = ({ onCapture, onError, onUp
     startCamera();
 
     return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
     };
   }, [onError]);
 
-  const capture = () => {
+  const capture = useCallback(() => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
@@ -73,7 +102,7 @@ export const CameraView: React.FC<CameraViewProps> = ({ onCapture, onError, onUp
         onCapture(imageSrc);
       }
     }
-  };
+  }, [onCapture]);
 
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center bg-black overflow-hidden">
@@ -88,25 +117,42 @@ export const CameraView: React.FC<CameraViewProps> = ({ onCapture, onError, onUp
         ref={videoRef}
         playsInline
         muted
-        className="absolute inset-0 w-full h-full object-cover object-center transform scale-x-[-1] origin-center"
+        className={`absolute inset-0 w-full h-full object-cover object-center transform scale-x-[-1] origin-center transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
       />
       <canvas ref={canvasRef} className="hidden" />
+
+      {/* 加载状态 */}
+      {isLoading && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-30 bg-black/80">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-white/20 border-t-teal-500 rounded-full animate-spin"></div>
+          </div>
+          {isRequestingPermission ? (
+            <>
+              <p className="mt-4 text-white text-base font-semibold">{t.requestingCameraPermission || '正在请求摄像头权限...'}</p>
+              <p className="mt-2 text-white/60 text-xs max-w-xs text-center px-4">{t.cameraPermissionHint || '请在浏览器弹窗中允许访问摄像头'}</p>
+            </>
+          ) : (
+            <p className="mt-4 text-white/80 text-sm font-medium">{t.loadingCamera || 'Loading camera...'}</p>
+          )}
+        </div>
+      )}
 
       {/* AR 叠加引导 */}
       <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10 opacity-80">
         {/* 面部引导 SVG */}
-        <svg viewBox="0 0 200 250" className="w-64 h-80 md:w-80 md:h-96 text-white/50 border-2 border-dashed border-white/30 rounded-full shadow-[0_0_100px_rgba(0,0,0,0.5)] animate-pulse">
+        <svg viewBox="0 0 200 250" className={`w-64 h-80 md:w-80 md:h-96 text-white/50 border-2 border-dashed border-white/30 rounded-full shadow-[0_0_100px_rgba(0,0,0,0.5)] animate-pulse transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
           <ellipse cx="100" cy="125" rx="70" ry="90" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="4 4" />
           <path d="M100 125 L100 160" stroke="currentColor" strokeWidth="2" />
           <path d="M80 180 Q100 200 120 180" stroke="currentColor" strokeWidth="2" />
         </svg>
 
         {/* 扫描线效果 */}
-        <div className="scan-line"></div>
+        <div className={`scan-line transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}></div>
       </div>
 
       {/* 控制按钮 */}
-      <div className="absolute bottom-8 w-full flex flex-col items-center gap-6 z-20">
+      <div className={`absolute bottom-8 w-full flex flex-col items-center gap-6 z-20 transition-opacity duration-500 ${isLoading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         <div className="bg-black/60 text-white px-6 py-3 rounded-full text-sm backdrop-blur-md flex flex-col items-center text-center border border-white/10 shadow-xl">
           <span className="font-semibold text-base">{t.alignFace}</span>
           <span className="text-xs text-teal-200 mt-1">{t.alignHint}</span>
@@ -120,15 +166,18 @@ export const CameraView: React.FC<CameraViewProps> = ({ onCapture, onError, onUp
           <button
             onClick={capture}
             disabled={!isStreamReady}
-            className={`relative w-20 h-20 rounded-full border-4 border-white flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 ${isStreamReady ? 'cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.3)]' : 'opacity-50 cursor-not-allowed'}`}
+            aria-label={t.ariaLabels?.takePhoto || "Take photo"}
+            aria-disabled={!isStreamReady}
+            className={`relative w-20 h-20 rounded-full border-4 border-white flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-4 focus:ring-offset-black/50 ${isStreamReady ? 'cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.3)]' : 'opacity-50 cursor-not-allowed'}`}
           >
-            <div className={`w-16 h-16 rounded-full transition-colors duration-300 ${isStreamReady ? 'bg-teal-500 hover:bg-teal-400' : 'bg-gray-500'}`}></div>
+            <div className={`w-16 h-16 rounded-full transition-colors duration-300 ${isStreamReady ? 'bg-teal-600 hover:bg-teal-500' : 'bg-gray-500'}`}></div>
           </button>
 
           {/* 上传按钮 */}
           <button
             onClick={onUpload}
-            className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center hover:bg-black/60 transition-all border border-white/20 text-white active:scale-90"
+            aria-label={t.ariaLabels?.uploadFromGallery || "Upload photo from gallery"}
+            className="w-12 h-12 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center hover:bg-black/70 transition-all border border-white/30 text-white active:scale-90 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black/50 min-w-[44px] min-h-[44px]"
             title={t.uploadPhoto}
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -140,3 +189,5 @@ export const CameraView: React.FC<CameraViewProps> = ({ onCapture, onError, onUp
     </div>
   );
 };
+
+export const CameraView = React.memo(CameraViewComponent);
